@@ -1,6 +1,6 @@
 {
   "name": "elicit",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A small search tool which helps find and present contents of files",
   "main": "./bin/elicit",
   "bin": "./bin/elicit",
