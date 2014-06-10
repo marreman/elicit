@@ -1,0 +1,69 @@
+#!/usr/bin/env node
+
+var program = require('commander')
+  , exec = require('child_process').exec
+  , colors = require('colors')
+  , cmd = 'find %cwd -type f'.replace('%cwd', process.cwd());
+
+program
+  .version('0.0.1')
+  .option('-i, --include [pattern]', 'Only search in files whose name match a certain expression')
+  .option('-e, --exclude [pattern]', 'Exclude files whose name match a certain expression')
+  .option('-s, --search [pattern]', 'Search pattern to look for in files')
+  .parse(process.argv);
+
+if (program.include) {
+  var includes = program.include.split('|').map(function (include) {
+    return '-name "%include"'.replace('%include', include);
+  });
+
+  cmd += ' ' + includes.join(' -or ');
+}
+
+if (program.exclude) {
+  cmd += ' ' + '\! -name "%exclude"'.replace('%exclude', program.exclude);
+}
+
+if (program.search) {
+  cmd += ' | xargs grep -IHn "%search"'.replace('%search', program.search);
+}
+
+exec(cmd, function (error, rawResult) {
+  var result = {}
+    // split rows and data type
+    , rows = rawResult.split('\n').map(function (row) {
+      return row.split(':');
+    });
+
+
+  rows.pop(); // remove last result since it's just a new line
+
+  // clean up rows
+  rows.forEach(function (rawRow) {
+    var fileName = rawRow.shift()
+      , file = result[fileName] || [];
+
+    file.push({
+      lineNumber: rawRow.shift(),
+      content: rawRow.join('').trim()
+    });
+
+    result[fileName] = file;
+  });
+
+  // present
+  console.log('Executed command: '.grey + cmd.rainbow);
+  console.log();
+  for (var fileName in result) {
+    console.log(fileName.green);
+
+    if (program.search) {
+      result[fileName].forEach(function (row) {
+        console.log('\t' + row.lineNumber.grey + ': '.grey + row.content);
+      });
+
+      console.log();
+    }
+  }
+});
+
