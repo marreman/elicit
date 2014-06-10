@@ -2,7 +2,8 @@
   "name": "elicit",
   "version": "0.0.1",
   "description": "A small search tool which helps find and present contents of files",
-  "main": "bin/elicit",
+  "main": "./bin/elicit",
+  "bin": "./bin/elicit",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
